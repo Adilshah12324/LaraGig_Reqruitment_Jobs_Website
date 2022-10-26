@@ -14,7 +14,7 @@ class ListingController extends Controller
  public function index()
  {
     return view('listings.index',[
-        'listings' => Listing::latest()->filter(request(['tag','search']))->paginate(4),
+        'listings' => Listing::latest()->filter(request(['tag','search']))->paginate(6),
     ]);
  }
 
@@ -34,7 +34,7 @@ class ListingController extends Controller
     // store listing data
     public function store(Request $request)
     {
-        
+            // dd($request->file('logo'));
         $formFields = $request->validate([
             'title' => 'required',
             'company' => ['required', Rule::unique('listings','company')],
@@ -45,8 +45,46 @@ class ListingController extends Controller
             'description' => 'required',
 
         ]);
+        if ($request->hasFile('logo')) {
+            $formFields['logo'] = $request->file('logo')->store('logos','public');
+            # code...
+        }
         Listing::create($formFields);
         return redirect('/')->with('message','Listing Created Successfully..!');
+        # code...
+    }
+    public function edit(Listing $listing)
+    {
+        return view('listings.edit',['listing'=> $listing]);
+        # code...
+    }
+    public function update(Request $request,Listing $listing)
+    {
+        $formFields = $request->validate([
+            'title' => 'required',
+            'company' => 'required',
+            'location' => 'required',
+            'website' => 'required',
+            'email' => 'required',
+            'tags' => 'required',
+            'description' => 'required',
+
+        ]);
+        if ($request->hasFile('logo')) {
+            $formFields['logo'] = $request->file('logo')->store('logos','public');
+            # code...
+        }
+        
+        $listing->update($formFields);
+        
+        return back()->with('message','Listing updated Successfully..!');
+        # code...
+    }
+    public function destroy(Listing $listing)
+    {
+        $listing->delete();
+        return redirect('/')->with('message','Listing Deleted Successfully..!');
+        
         # code...
     }
 }
